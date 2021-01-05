@@ -33,7 +33,9 @@ So that I can organize and plan my business
 ## Usage 
 🔧
 
-Provide instructions and examples for use. Include screenshots as needed. 
+![View All Employees By...](assets/screenShot_1.png)
+![Add Employee](assets/screenShot_2.png)
+![Update Employee Role](assets/screenShot_3.png)
 
 
 ## Credits 
