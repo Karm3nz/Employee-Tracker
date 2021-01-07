@@ -61,22 +61,29 @@ const start = () => {
             'View All Employees',
             'View All Employees By Department',
             'View All Roles', 
+            'View Department Budget',
+            'View Employees By Manager',
             'Add Employee', 
             'Add Role',
             'Add Department',
             'Update Employee Role'
         ]
-    })
-    .then((answer) => {
+    }).then((answer) => {
         switch (answer.choice) {
             case 'View All Employees':
-            viewAllEmployees();
+                viewAllEmployees();
                 break;
             case 'View All Employees By Department':
-            viewEmployeesByDepartment();
+                viewEmployeesByDepartment();
                 break;
             case 'View All Roles':
                 viewAllRoles();
+                break;
+            case 'View Department Budget':
+                viewDepartmentBudget();
+                break;
+            case 'View Employees By Manager':
+                viewEmployeesByManager();
                 break;
             case 'Add Employee':
                 addEmployee();
@@ -90,13 +97,14 @@ const start = () => {
             case 'Update Employee Role':
                 updateEmployeeRole();
                 break;
+
         }
     });
 };
 
 //================================= function to handle 'View All Employees'
     const viewAllEmployees = () => {
-        connection.query(`SELECT e.first_name, e.last_name, role.title, department.name, role.salary, CONCAT(m.first_name, ' ' , m.last_name) AS Manager 
+        connection.query(`SELECT e.id, e.first_name, e.last_name, role.title, department.name, role.salary, CONCAT(m.first_name, ' ' , m.last_name) AS Manager 
         FROM employee e
         INNER JOIN role ON e.role_id = role.id 
         INNER JOIN department ON role.department_id = department.id 
@@ -111,7 +119,7 @@ const start = () => {
 
 //==================== function to handle 'View All Employees By Department'
 const viewEmployeesByDepartment = () => {
-    connection.query(`SELECT e.first_name, e.last_name, department.name AS Department 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, department.name AS Department 
     FROM employee e
     JOIN role ON e.role_id = role.id 
     JOIN department ON role.department_id = department.id 
@@ -126,7 +134,7 @@ const viewEmployeesByDepartment = () => {
 
 //====================================== function to handle 'View All Roles'
 const viewAllRoles = () => {
-    connection.query(`SELECT e.first_name, e.last_name, role.title AS Title 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS Title 
     FROM employee e
     JOIN role ON e.role_id = role.id;`, 
         (err, res) => {
@@ -135,6 +143,39 @@ const viewAllRoles = () => {
         start();
         }
     )
+}
+
+//==================================function to handle 'View Department Budget'
+
+const viewDepartmentBudget = () => {
+    connection.query(`SELECT SUM( role.salary) AS salary, department.name AS department 
+    FROM role
+    INNER JOIN department ON department.id = role.department_id
+    GROUP BY department.name;
+    `, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        start();
+        }
+    );
+}
+
+//===============================function to handle 'View Employees By Manager'
+
+const viewEmployeesByManager = () => {
+    connection.query(`SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ' , m.last_name) AS Manager 
+    FROM employee e
+    INNER JOIN role ON e.role_id = role.id 
+    INNER JOIN department ON role.department_id = department.id 
+    LEFT JOIN employee m ON e.manager_id = m.id
+    ORDER BY m.id DESC;
+
+    `, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        start();
+        }
+    );
 }
 
 // create array to handle role title queries for 'Add Employees' and 'Update Employee'
@@ -154,7 +195,7 @@ let managerArr = [];
 var managerChoices = () => {
     connection.query(`SELECT first_name, last_name 
     FROM employee 
-    WHERE manager_id IS NULL
+    WHERE manager_id IS NULL;
     `, (err, res) => {
         if (err) throw err
         for (let i = 0; i < res.length; i++) {
@@ -189,8 +230,7 @@ const addEmployee = () => {
             message: "What is their manager's name?",
             choices: managerChoices()
         }
-    ])
-    .then((answer) => {
+    ]).then((answer) => {
         let roleId = roleChoices().indexOf(answer.role) + 1
         let managerId = managerChoices().indexOf(answer.manager) + 1
         connection.query("INSERT INTO employee SET ?", 
@@ -224,8 +264,7 @@ const addRole = () => {
                 type: 'input',
                 message: "What is the salary of the role to be added?"
             }
-        ])
-        .then((answer) => {
+        ]).then((answer) => {
             connection.query("INSERT INTO role SET ?", 
             {
                 title: answer.title,
@@ -248,8 +287,7 @@ const addDepartment = () => {
             type: 'input',
             message: "What is the name of the department to be added?",
         }
-    ])
-    .then((answer) => {
+    ]).then((answer) => {
         connection.query("INSERT INTO department SET ?", 
         {
             name: answer.name  
@@ -308,3 +346,4 @@ const updateEmployeeRole = () => {
         });
     });
 }
+
