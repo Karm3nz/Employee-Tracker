@@ -51,7 +51,14 @@ connection.connect((err) => {
 // function which prompts the user for what action they would like to take
 const start = () => {
     console.log('                ');
-    console.log('WELCOME TO THE EMPLOYEE TRACKER APP ! ! !');
+    console.log(`
+    █████╗███╗   ███╗██████╗ ██╗      ██████╗ ██╗   ██╗███████╗███████╗    ████████╗██████╗  █████╗  ██████╗██╗  ██╗███████╗██████╗ 
+    ██╔════╝████╗ ████║██╔══██╗██║     ██╔═══██╗╚██╗ ██╔╝██╔════╝██╔════╝    ╚══██╔══╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝██╔══██╗
+    █████╗  ██╔████╔██║██████╔╝██║     ██║   ██║ ╚████╔╝ █████╗  █████╗         ██║   ██████╔╝███████║██║     █████╔╝ █████╗  ██████╔╝
+    ██╔══╝  ██║╚██╔╝██║██╔═══╝ ██║     ██║   ██║  ╚██╔╝  ██╔══╝  ██╔══╝         ██║   ██╔══██╗██╔══██║██║     ██╔═██╗ ██╔══╝  ██╔══██╗
+    ███████╗██║ ╚═╝ ██║██║     ███████╗╚██████╔╝   ██║   ███████╗███████╗       ██║   ██║  ██║██║  ██║╚██████╗██║  ██╗███████╗██║  ██║
+    ╚══════╝╚═╝     ╚═╝╚═╝     ╚══════╝ ╚═════╝    ╚═╝   ╚══════╝╚══════╝       ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝           
+    `);
     console.log('                ');
     inquirer.prompt({
         type: 'list',
@@ -248,11 +255,29 @@ const addEmployee = () => {
         );
     });   
 }
+// create array to handle department queries for 'Add Roles'
+let departmentArr = [];
+var departmentChoices = () => {
+    connection.query(`SELECT * 
+    FROM department;
+    `, (err, res) => {
+        if (err) throw err
+        for (let i = 0; i < res.length; i++) {
+            departmentArr.push(res[i].name);
+        }
+    })
+    return departmentArr;
+}
 
 //=========================================== function to handle 'ADD ROLE'
 const addRole = () => {
-    connection.query("SELECT role.title AS title, role.salary AS salary FROM role", (err) => {
+    connection.query(`SELECT role.title AS title, role.salary AS salary, department.id AS department 
+    FROM role
+    INNER JOIN department ON department.id = role.department_id
+    `, (err) => {
         if (err) throw err;
+        console.table();
+
         inquirer.prompt([
             {
                 name: 'title',
@@ -263,12 +288,20 @@ const addRole = () => {
                 name: 'salary',
                 type: 'input',
                 message: "What is the salary of the role to be added?"
-            }
+            },
+            {
+                name: 'department',
+                type: 'rawlist',
+                message: "What is the department of the role to be added?",
+                choices: departmentChoices()
+            },
         ]).then((answer) => {
+            let departmentId = departmentChoices().indexOf(answer.department) + 1
             connection.query("INSERT INTO role SET ?", 
             {
                 title: answer.title,
-                salary: answer.salary
+                salary: answer.salary,
+                department_id: departmentId
             }, 
             (err) => {
                 if (err) throw err;
@@ -303,7 +336,7 @@ const addDepartment = () => {
 //================================== function to handle 'UPDATE EMPLOYEE ROLES'
 
 const updateEmployeeRole = () => {
-    connection.query(`SELECT e.first_name, e.last_name ,role.title
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title
     FROM employee e
     INNER JOIN role ON e.role_id = role.id;`, (err,res) => {
         if (err) throw err;
@@ -328,10 +361,9 @@ const updateEmployeeRole = () => {
                 message: "What is the Employees new title? ",
                 choices: roleChoices()
             }
-        ])
-        .then((answer) => {
+        ]).then((answer) => {
             let roleId = roleChoices().indexOf(answer.role) + 1
-            connection.query("UPDATE employee SET WHERE ?", 
+            connection.query("UPDATE employee SET ? WHERE ?", 
             {
                 role_id: roleId
             },
