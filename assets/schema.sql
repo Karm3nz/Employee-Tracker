@@ -28,20 +28,30 @@ CREATE TABLE department (
 );
 
 CREATE TABLE role (
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(30) NOT NULL,
-    salary DECIMAL NOT NULL,
-    department_id INT NOT NULL,
-    FOREIGN KEY (department_id) REFERENCES department(id)
+  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(30) NOT NULL,
+  salary DECIMAL NOT NULL,
+  department_id INT NOT NULL,
+  FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
 
 CREATE TABLE employee (
-    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    first_name VARCHAR(30) NOT NULL,
-    last_name VARCHAR(30) NOT NULL,
-    role_id INT NOT NULL,
-    manager_id INT,
-    FOREIGN KEY (role_id) REFERENCES role(id),
-    FOREIGN KEY (manager_id) REFERENCES employee(id)
+  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  first_name VARCHAR(30) NOT NULL,
+  last_name VARCHAR(30) NOT NULL,
+  role_id INT NOT NULL,
+  manager_id INT,
+  FOREIGN KEY (role_id) REFERENCES role(id),
+  FOREIGN KEY (manager_id) REFERENCES employee(id)
 );
+
+INSERT INTO department (name)
+VALUES ("Sales"), ("Engineering"), ("Finance"), ("Legal");
+
+INSERT INTO role (title, salary, department_id)
+VALUE ("Sales Lead", 100000.00, 1), ("Sales Person", 80000, 1), ("Lead Engineer", 150000, 2), ("Software Engineer", 120000, 2), ("Accountant", 125000, 3), ("Legal Team Lead", 250000, 4), ("Lawyer", 190000, 4);
+
+
+INSERT INTO employee (first_name, last_name, role_id, manager_id)
+VALUE ("Ashley", "Rodriquez", 3, null), ("Malia", "Brown", 5, null), ("Sarah", "Lourd", 6, null), ("John", "Doe", 2, 3), ("Mike", "Chan", 1, 1), ("Tom", "Allen", 7, 6), ("Christian", "Eckenrode", 3, 2);
