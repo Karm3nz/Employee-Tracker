@@ -67,7 +67,7 @@ const start = () => {
         choices: [
             'View All Employees',
             'View All Employees By Department',
-            'View All Roles', 
+            'View Employees By Roles', 
             'View Department Budget',
             'View Employees By Manager',
             'Add Employee', 
@@ -84,8 +84,8 @@ const start = () => {
             case 'View All Employees By Department':
                 viewEmployeesByDepartment();
                 break;
-            case 'View All Roles':
-                viewAllRoles();
+            case 'View Employees By Roles':
+                viewEmployeeByRoles();
                 break;
             case 'View Department Budget':
                 viewDepartmentBudget();
@@ -112,7 +112,7 @@ const start = () => {
     });
 };
 
-//================================= function to handle 'View All Employees'
+//================================= function to handle 'VIEW ALL EMPLOYEES'
     const viewAllEmployees = () => {
         connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS role, department.name AS department, role.salary, CONCAT(m.first_name, ' ' , m.last_name) AS manager 
         FROM employee e
@@ -122,59 +122,64 @@ const start = () => {
         ORDER BY e.id ASC;
         `, (err, res) => {
               if (err) throw err;
+              console.log('');
               console.table(res);
               start();
             }
         );
     }
 
-//==================== function to handle 'View All Employees By Department'
+//==================== function to handle 'VIEW ALL EMPLOYEES BY DEPARTMENT'
 const viewEmployeesByDepartment = () => {
-    connection.query(`SELECT e.id, e.first_name, e.last_name, department.name AS Department 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, department.name AS department 
     FROM employee e
     JOIN role ON e.role_id = role.id 
     JOIN department ON role.department_id = department.id 
     ORDER BY e.id;
     `, (err, res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
         start();
         }
     );
 }
 
-//====================================== function to handle 'View All Roles'
-const viewAllRoles = () => {
+//====================================== function to handle 'VIEW EMPLOYEES BY ROLES'
+const viewEmployeeByRoles = () => {
     connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS roles
     FROM employee e
-    JOIN role ON e.role_id = role.id;`, 
+    JOIN role ON e.role_id = role.id
+    ORDER BY role.id;`, 
         (err, res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
         start();
         }
     )
 }
 
-//==================================function to handle 'View Department Budget'
+//==================================function to handle 'VIEW DEPARTMENT BUDGET'
 
 const viewDepartmentBudget = () => {
-    connection.query(`SELECT SUM( role.salary) AS salary, department.name AS department 
+    connection.query(`SELECT department.name AS department, SUM( role.salary) AS total_depatment_budget 
     FROM role
     INNER JOIN department ON department.id = role.department_id
     GROUP BY department.name;
     `, (err, res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
         start();
         }
     );
 }
 
-//===============================function to handle 'View Employees By Manager'
+//===============================function to handle 'VIEW EMPLOYEES BY MANAGER'
 
 const viewEmployeesByManager = () => {
-    connection.query(`SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ' , m.last_name) AS manager 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ' , m.last_name) AS manager
     FROM employee e
     INNER JOIN role ON e.role_id = role.id 
     INNER JOIN department ON role.department_id = department.id 
@@ -183,6 +188,7 @@ const viewEmployeesByManager = () => {
 
     `, (err, res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
         start();
         }
@@ -280,6 +286,7 @@ const addRole = () => {
     INNER JOIN department ON department.id = role.department_id
     `, (err) => {
         if (err) throw err;
+        console.log('');
         console.table();
 
         inquirer.prompt([
@@ -320,14 +327,14 @@ const addRole = () => {
 const addDepartment = () => {
     inquirer.prompt([
         {
-            name: 'name',
+            name: 'dept_name',
             type: 'input',
             message: "What is the name of the department to be added?",
         }
     ]).then((answer) => {
         connection.query("INSERT INTO department SET ?", 
         {
-            name: answer.name  
+            name: answer.dept_name  
         }, 
         (err) => {
             if (err) throw err;
@@ -345,6 +352,7 @@ const updateEmployeeRole = () => {
     INNER JOIN role ON e.role_id = role.id
     ORDER BY e.id ASC;`, (err,res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
 
         inquirer.prompt([
@@ -380,6 +388,7 @@ const deleteEmployee = () => {
     LEFT JOIN employee m ON e.manager_id = m.id
     ORDER BY m.id DESC;`, (err,res) => {
         if (err) throw err;
+        console.log('');
         console.table(res);
 
         inquirer.prompt([

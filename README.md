@@ -11,6 +11,7 @@ As a business owner
 I want to be able to view and manage the departments, roles, and employees in my company
 So that I can organize and plan my business
 ```
+![Image of Schema](assets/schema.png)
 
 ## Table of Contents 📜
 
@@ -34,16 +35,15 @@ So that I can organize and plan my business
 🔧
 
 ![View All Employees By...](assets/screenShot_1.png)
-![Add Employee](assets/screenShot_2.png)
-![Update Employee Role](assets/screenShot_3.png)
-
+* Video Walkthrough link: https://drive.google.com/file/d/1WwtrOOGDI9_nPhJ8ubpAYZD3pC-8BF5_/view
 
 ## Credits 
 📣
 
 References/tutorials:
 * SQL Bolt: https://sqlbolt.com/
-* Learn by Example https://www.learnbyexample.org/sql-update-statement/
+* Learn by Example: https://www.learnbyexample.org/sql-update-statement/
+* SQL Server: https://www.zentut.com/sql-tutorial/sql-delete/
 
 
 ## License 
