@@ -73,7 +73,8 @@ const start = () => {
             'Add Employee', 
             'Add Role',
             'Add Department',
-            'Update Employee Role'
+            'Update Employee Role',
+            'Delete Employee'
         ]
     }).then((answer) => {
         switch (answer.choice) {
@@ -104,18 +105,21 @@ const start = () => {
             case 'Update Employee Role':
                 updateEmployeeRole();
                 break;
-
+            case 'Delete Employee':
+                deleteEmployee();
+                break;
         }
     });
 };
 
 //================================= function to handle 'View All Employees'
     const viewAllEmployees = () => {
-        connection.query(`SELECT e.id, e.first_name, e.last_name, role.title, department.name, role.salary, CONCAT(m.first_name, ' ' , m.last_name) AS Manager 
+        connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS role, department.name AS department, role.salary, CONCAT(m.first_name, ' ' , m.last_name) AS manager 
         FROM employee e
         INNER JOIN role ON e.role_id = role.id 
         INNER JOIN department ON role.department_id = department.id 
-        LEFT JOIN employee m ON e.manager_id = m.id;
+        LEFT JOIN employee m ON e.manager_id = m.id
+        ORDER BY e.id ASC;
         `, (err, res) => {
               if (err) throw err;
               console.table(res);
@@ -141,7 +145,7 @@ const viewEmployeesByDepartment = () => {
 
 //====================================== function to handle 'View All Roles'
 const viewAllRoles = () => {
-    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS Title 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS roles
     FROM employee e
     JOIN role ON e.role_id = role.id;`, 
         (err, res) => {
@@ -170,7 +174,7 @@ const viewDepartmentBudget = () => {
 //===============================function to handle 'View Employees By Manager'
 
 const viewEmployeesByManager = () => {
-    connection.query(`SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ' , m.last_name) AS Manager 
+    connection.query(`SELECT e.id, e.first_name, e.last_name, CONCAT(m.first_name, ' ' , m.last_name) AS manager 
     FROM employee e
     INNER JOIN role ON e.role_id = role.id 
     INNER JOIN department ON role.department_id = department.id 
@@ -336,40 +340,27 @@ const addDepartment = () => {
 //================================== function to handle 'UPDATE EMPLOYEE ROLES'
 
 const updateEmployeeRole = () => {
-    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title AS role, e.role_id
     FROM employee e
-    INNER JOIN role ON e.role_id = role.id;`, (err,res) => {
+    INNER JOIN role ON e.role_id = role.id
+    ORDER BY e.id ASC;`, (err,res) => {
         if (err) throw err;
         console.table(res);
 
         inquirer.prompt([
             {
-                name: 'name',
-                type: 'rawlist',
-                message: "What is the last name of the employee to be updated?",
-                choices: nameChoice = () => {
-                    let lastName = [];
-                    for (let i = 0; i < res.length; i++) {
-                        lastName.push(res[i].last_name);
-                    }   
-                    return lastName;
-                }
+                name: 'employeeId',
+                type: 'input',
+                message: "What is the id of the employee to be updated?",
             },
             {
-                name: "role",
-                type: "rawlist",
-                message: "What is the Employees new title? ",
-                choices: roleChoices()
+                name: "roleId",
+                type: "input",
+                message: "What is the role id of the role being updated to? ",
             }
         ]).then((answer) => {
-            let roleId = roleChoices().indexOf(answer.role) + 1
-            connection.query("UPDATE employee SET ? WHERE ?", 
-            {
-                role_id: roleId
-            },
-            {
-                last_name: answer.lastName 
-            },
+            connection.query("UPDATE employee SET role_id = ? WHERE id = ?", 
+            [answer.roleId, answer.employeeId], 
             (err) => {
                 if (err) throw err;
                 console.table(answer);
@@ -379,3 +370,34 @@ const updateEmployeeRole = () => {
     });
 }
 
+//================================ function to handle 'DELETE EMPLOYEE'
+
+const deleteEmployee = () => {
+    connection.query(`SELECT e.id, e.first_name, e.last_name, role.title, department.name AS department, CONCAT(m.first_name, ' ' , m.last_name) AS manager 
+    FROM employee e
+    INNER JOIN role ON e.role_id = role.id 
+    INNER JOIN department ON role.department_id = department.id 
+    LEFT JOIN employee m ON e.manager_id = m.id
+    ORDER BY m.id DESC;`, (err,res) => {
+        if (err) throw err;
+        console.table(res);
+
+        inquirer.prompt([
+            {
+                name: 'employeeId',
+                type: 'input',
+                message: "What is the id of the employee to be deleted?",
+            },
+        ]).then((answer) => {
+            connection.query("DELETE FROM employee WHERE ?", 
+            {
+                id: answer.employeeId
+            }, 
+            (err) => {
+                if (err) throw err;
+                console.table(answer);
+                start();
+            })
+        });
+    });
+}
